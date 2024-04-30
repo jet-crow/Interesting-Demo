@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原生弹窗</title>
+  <style>
+    #dialog {
+      border-color: #ccc;
+      border-radius: 5px;
+      border-width: 0;
+    }
+
+    #dialog::backdrop {
+      background-color: rgb(129, 116, 116);
+      opacity: 0.78;
+      backdrop-filter: blur(5px);
+    }
+  </style>
+</head>
+
+<body>
+  <button onclick="dialog.showModal()">弹窗</button>
+  <dialog id="dialog">
+    <div class="win">
+      <p>This is a window</p>
+      <p>
+        <input type="text" name="" id="">
+      </p>
+      <p>
+        <input type="text" name="" id="">
+      </p>
+      <button onclick="dialog.close()">关闭</button>
+    </div>
+  </dialog>
+</body>
+
+</html>
