@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <title>Document</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      font-family: monospace;
+    }
+
+    body {
+      background: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #app {
+      text-align: center;
+    }
+
+    input {
+      width: 100vw;
+      border: none;
+      font-size: 2em;
+      line-height: 2em;
+      letter-spacing: .15em;
+      text-align: center;
+      font-weight: bolder;
+      margin-bottom: 2rem;
+    }
+
+    input:focus {
+      outline: none;
+    }
+
+    .typewriter h1 {
+      color: #fff;
+      white-space: nowrap;
+      margin: 0 auto;
+      letter-spacing: .15em;
+      height: 1em;
+      font-size: 2em;
+    }
+
+    #content {
+      overflow: hidden;
+      border-right: .15em solid orange;
+      animation: blink-caret .5s step-end infinite;
+      /* width: 0; */
+      /*  动态修改width即可达到打字机的效果 */
+    }
+
+    @keyframes blink-caret {
+
+      from,
+      to {
+        border-color: transparent
+      }
+
+      50% {
+        border-color: orange
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <input type="text" v-model="content">
+    <div class="typewriter">
+      <h1 id="content" :style="`width: ${contentWidth}px;`">{{content}} </h1>
+      <!-- 光标为元素调整位置-->
+      <!-- 待實現功能 -->
+      <!-- 
+        1. 光標跟隨input來移動
+        2. 内容中間添加和刪除
+        2. 选中（删除，替换）
+       -->
+      <h1 ref="stencil" style="height: 0; overflow: hidden;width: fit-content;">{{content}}</h1>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted, watch, nextTick } = Vue
+    createApp({
+      setup() {
+        const contentWidth = ref(0);
+        const content = ref('')
+        const stencil = ref()
+        let totalWidth = 0
+        let requestId
+        const step = 3;
+        const animateWidth = () => {
+          if (Math.abs(contentWidth.value - totalWidth) < step) {
+            cancelAnimationFrame(requestId)
+            return;
+          }
+          if (contentWidth.value < totalWidth) {
+            contentWidth.value += 3
+            requestId = requestAnimationFrame(animateWidth)
+          } else if (contentWidth.value > totalWidth) {
+            contentWidth.value = totalWidth
+            requestId = requestAnimationFrame(animateWidth)
+          }
+        }
+        //监听content 的变化
+        watch(() => content.value, (newVal, oldVal) => {
+          //取消
+          nextTick(() => {
+            //向上取整
+            totalWidth = Math.ceil(stencil.value.getBoundingClientRect().width)
+            cancelAnimationFrame(requestId)
+            animateWidth() // 开始动画
+          })
+        })
+
+        return {
+          content,
+          contentWidth,
+          stencil
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+
+</html>
