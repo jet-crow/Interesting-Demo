@@ -44,7 +44,7 @@
       white-space: nowrap;
       margin: 0 auto;
       letter-spacing: .15em;
-      height: 1em;
+      height: 1.25em;
       font-size: 2em;
     }
 
@@ -72,16 +72,9 @@
 
 <body>
   <div id="app">
-    <input type="text" v-model="content">
+    <input type="text" :value="content" @input="handleChange">
     <div class="typewriter">
-      <h1 id="content" :style="`width: ${contentWidth}px;`">{{content}} </h1>
-      <!-- 光标为元素调整位置-->
-      <!-- 待實現功能 -->
-      <!-- 
-        1. 光標跟隨input來移動
-        2. 内容中間添加和刪除
-        2. 选中（删除，替换）
-       -->
+      <h1 id="content" :style="`width: ${contentWidth}px;`">{{contentView}} </h1>
       <h1 ref="stencil" style="height: 0; overflow: hidden;width: fit-content;">{{content}}</h1>
     </div>
   </div>
@@ -92,22 +85,34 @@
       setup() {
         const contentWidth = ref(0);
         const content = ref('')
+        const contentView = ref('')
         const stencil = ref()
         let totalWidth = 0
         let requestId
         const step = 3;
+        const handleChange = (e) => {
+          content.value = e.target.value
+          //如果是删除则先不删除
+          if (contentView.value.length > e.target.value.length) {
+            return
+          }
+          contentView.value = e.target.value
+        }
         const animateWidth = () => {
           if (Math.abs(contentWidth.value - totalWidth) < step) {
+            contentView.value = content.value
             cancelAnimationFrame(requestId)
             return;
           }
-          if (contentWidth.value < totalWidth) {
+          if (contentWidth.value > totalWidth) {
+            contentWidth.value -= 3
+            // contentWidth.value = totalWidth
+            requestId = requestAnimationFrame(animateWidth)
+          } else if (contentWidth.value < totalWidth) {
             contentWidth.value += 3
             requestId = requestAnimationFrame(animateWidth)
-          } else if (contentWidth.value > totalWidth) {
-            contentWidth.value = totalWidth
-            requestId = requestAnimationFrame(animateWidth)
           }
+
         }
         //监听content 的变化
         watch(() => content.value, (newVal, oldVal) => {
@@ -123,7 +128,9 @@
         return {
           content,
           contentWidth,
-          stencil
+          stencil,
+          handleChange,
+          contentView
         }
       }
     }).mount('#app')
