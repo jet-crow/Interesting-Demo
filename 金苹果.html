@@ -5,8 +5,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #e6e6e6;
+    }
+
     #apple {
       display: grid;
       grid-template-columns: repeat(16, 1fr);
@@ -40,7 +53,7 @@
   </style>
 </head>
 
-<body class="bg-[#e6e6e6] w-screen h-screen flex justify-center items-center">
+<body>
   <div id="apple">
   </div>
 </body>
