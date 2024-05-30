@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    *,
+    ::after,
+    ::before {
+      box-sizing: border-box;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #FAFAFA;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .card-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .ball-bouncing {
+      align-items: center;
+      border-radius: 0.25rem;
+      box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.25);
+      display: flex;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+      background-color: #F9EEAB;
+      width: 23rem;
+      height: 23rem;
+    }
+
+    .ball-bouncing::before {
+      animation: shadowBouncing 1.2s ease-out infinite;
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 1rem;
+      bottom: 2rem;
+      content: '';
+      height: 0.15rem;
+      position: absolute;
+      width: 2rem;
+    }
+
+
+    .ball {
+      background-color: #fff;
+      border-radius: 50%;
+      height: 3rem;
+      position: absolute;
+      width: 3rem;
+    }
+
+    .ball-bouncing .ball {
+      animation: ballBouncing 1.2s ease-out infinite;
+      bottom: 2.1rem;
+      transform-origin: bottom;
+    }
+
+    @keyframes ballBouncing {
+
+      0%,
+      100% {
+        transform: scale(1.5, 0.5);
+      }
+
+      20% {
+        transform: scaleY(1.2);
+      }
+
+      40%,
+      80% {
+        transform: translateY(-14rem);
+      }
+
+      70% {
+        transform: translateY(-15rem);
+      }
+
+      90% {
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shadowBouncing {
+
+      0%,
+      100% {
+        transform: scale(2, 0.8);
+      }
+
+      20% {
+        transform: scale(1.2, 0.8);
+      }
+
+      40%,
+      80% {
+        transform: scale(0.5, 0.2);
+      }
+
+      70% {
+        transform: scale(0.5, 0.15);
+      }
+
+      90% {
+        transform: scale(1.5, 0.6);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card-container">
+    <div class="ball-bouncing">
+      <div class="ball"></div>
+    </div>
+  </main>
+  <script>
+    const ball = document.querySelector('.ball');
+    setTimeout(() => {
+      setInterval(() => {
+        ball.style.backgroundColor = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`
+      }, 1200)
+    }, 600);
+  </script>
+</body>
+
+</html>
