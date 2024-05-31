@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>像素画</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 0;
+    }
+
+    /*  left-3 -top-full */
+    .offset {
+      left: 0.75rem;
+      top: calc(-100% - 2px);
+      transform: translateY(25%);
+    }
+
+    /* 滚动条样式 */
+    .scrollbar-container::-webkit-scrollbar {
+      width: 5px;
+      background-color: #f0f0f0;
+    }
+
+    .scrollbar-container::-webkit-scrollbar-thumb {
+      background-color: #c0c0c0;
+      border-radius: 5px;
+    }
+
+    .scrollbar-container::-webkit-scrollbar-thumb:hover {
+      background-color: #a0a0a0;
+    }
+  </style>
+</head>
+
+<body class="scrollbar-container">
+  <div id="app" class="w-screen h-screen flex items-center flex-col">
+    <!-- 操作台 -->
+    <div class="w-[49rem] flex justify-center items-center my-5 h-10 border-b border-t gap-2">
+      <!-- 成品 -->
+      <div class="flex border-r pr-2 items-center">
+        <div class="mr-1 cursor-pointer relative [&_*]:transition-all group">
+          <p class="text-sm hover:text-stone-400">请选择作品&dtrif;</p>
+          <ul
+            class="absolute invisible opacity-0 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-44 overflow-hidden">
+            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Developmen1232131123t</li>
+            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Web Design</li>
+            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Illustration</li>
+            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Iconography</li>
+          </ul>
+        </div>
+        <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50">play</button>
+      </div>
+      <!-- 选择背景颜色 -->
+      <input type="color" id="bgDrawingBoard" v-model="bgDrawingBoard"
+        class="w-8 focus:outline-none cursor-pointer rounded overflow-hidden">
+      <label for="width" class="relative">
+        <span class="absolute offset text-gray-400">w</span>
+        <input type="number" v-model="width.value" :max="width.max" class="text-center h-full focus:outline-none w-12">
+      </label>
+      <label for="width" class="relative">
+        <span class="absolute offset text-gray-400">h</span>
+        <input type="number" v-model="height.value" :max="height.max"
+          class="text-center h-full focus:outline-none w-12">
+      </label>
+      <button @click="changeDrawingBoard"
+        class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50">change</button>
+
+      <!-- 笔刷 -->
+      <div class="border-l pl-2 flex justify-center gap-2 items-center">
+        <img src="https://api.iconify.design/ph:eraser.svg" class="p-1 rounded cursor-pointer">
+        <img src="https://api.iconify.design/ph:paint-brush.svg" class="cursor-pointer rounded p-1 bg-stone-200">
+        <div v-for="i in 6" class="w-6 h-6 rounded flex justify-center items-center cursor-pointer"
+          :class="i==2?'bg-[#f03e3e]/50':''">
+          <div class="bg-[#f03e3e] w-4 h-4 rounded"></div>
+        </div>
+
+        <!-- 选择背景颜色 -->
+        <input type="color" id="bgDrawingBoard" v-model="bgDrawingBoard"
+          class="w-6 h-6 rounded overflow-hidden focus:outline-none cursor-pointer">
+      </div>
+
+      <!-- 保存和重置 -->
+      <div class="border-l pl-2 flex items-center">
+        <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50 relative [&_*]:transition-all group">
+          save
+          <ul
+            class="absolute invisible opacity-0 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-36 overflow-hidden text-black text-left">
+            <li class="leading-6 hover:text-stone-400">save</li>
+            <li class="leading-6 hover:text-stone-400">save as (a file)</li>
+          </ul>
+        </button>
+        <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50 ml-2">reset</button>
+      </div>
+    </div>
+
+    <main class=" grid box-content" :style="{
+      height: height + 'rem', 
+      width: width + 'rem',
+      backgroundColor: bgDrawingBoard,
+      gridTemplateColumns: `repeat(${drawingBoardSize.width}, 1fr)`,
+      gridTemplateRows: `repeat(${drawingBoardSize.height}, 1fr)`
+  }">
+      <template v-for="row in drawingBoard">
+        <div v-for="col in row" class="w-4 h-4" :style="{backgroundColor:col.length!=0?col:''}"></div>
+      </template>
+    </main>
+  </div>
+</body>
+<script type="module">
+  const { createApp } = Vue
+  import { useDrawingBoard } from './js/index.js'
+  createApp({
+    setup() {
+      return useDrawingBoard()
+    }
+  }).mount('#app')
+</script>
+
+</html>
