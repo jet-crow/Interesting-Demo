@@ -26,6 +26,7 @@
     /* 滚动条样式 */
     .scrollbar-container::-webkit-scrollbar {
       width: 5px;
+      height: 5px;
       background-color: #f0f0f0;
     }
 
@@ -43,11 +44,11 @@
 <body class="scrollbar-container">
   <div id="app" class="w-screen h-screen flex items-center flex-col">
     <!-- 操作台 -->
-    <div class="w-[49rem] flex justify-center items-center my-5 h-10 border-b border-t gap-2">
+    <div class="flex items-center my-5 h-10 border-b border-t gap-2 scrollbar-container">
       <!-- 成品 -->
       <div class="flex border-r pr-2 items-center">
         <div class="mr-1 cursor-pointer relative [&_*]:transition-all group">
-          <p class="text-sm hover:text-stone-400">请选择作品&dtrif;</p>
+          <p class="text-sm hover:text-stone-400 text-nowrap">请选择作品&dtrif;</p>
           <ul
             class="absolute invisible opacity-0 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-44 overflow-hidden">
             <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Developmen1232131123t</li>
