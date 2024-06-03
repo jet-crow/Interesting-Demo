@@ -24,7 +24,6 @@ export function init(height = 16, width = 16) {
 
 //检测是否有被裁剪
 function checkIsCut(drawingBoardArr, height, width) {
-  // 检测垂直方向是否有数据丢失
   if (drawingBoardArr.length > height) {
     for (let i = height; i < drawingBoardArr.length; i++) {
       if (drawingBoardArr[i].some(cell => cell !== "#00000000")) {
@@ -32,7 +31,6 @@ function checkIsCut(drawingBoardArr, height, width) {
       }
     }
   }
-  // 检测水平方向是否有数据丢失
   if (drawingBoardArr[0].length > width) {
     for (let i = 0; i < height; i++) {
       for (let j = width; j < drawingBoardArr[0].length; j++) {

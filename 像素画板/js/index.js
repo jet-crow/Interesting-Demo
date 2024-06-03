@@ -1,4 +1,4 @@
-const { ref, reactive, watch, onMounted, computed } = Vue
+const { ref, reactive, onMounted } = Vue
 import { debounce, init, updateDrawingBoard } from './utills.js'
 
 export function useDrawingBoard() {
@@ -113,7 +113,6 @@ export function useDrawingBoard() {
   let isPlay = false
   const draw = (e) => {
     if (!startDarwing.value || isPlay) return
-    //拿到对应的元素
     const target = e.target
     const row = target.getAttribute('data-row')
     const col = target.getAttribute('data-col')

@@ -125,8 +125,7 @@
 
       <template v-for="(row,rIndex) in drawingBoard" :key="rIndex">
         <div v-for="(col,cIndex) in row" class="w-4 h-4" :style="{backgroundColor:col,
-        borderColor:col==='#00000000'?'#c0c0c0':col
-      }" :data-row="rIndex" :data-col="cIndex">
+        borderColor:col==='#00000000'?'#c0c0c0':col}" :data-row="rIndex" :data-col="cIndex">
         </div>
       </template>
 
