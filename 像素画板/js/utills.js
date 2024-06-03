@@ -56,7 +56,7 @@ export function updateDrawingBoard(drawingBoardArr, height, width) {
   if (res.w > width.max) res.w = width.max;
 
   let isDataLoss = checkIsCut(drawingBoardArr, res.h, res.w);
-  if (isDataLoss && !confirm(`画布大小为:${res.h}x${res.w}内容将被裁剪，是否继续？`)) {
+  if (isDataLoss && !confirm(`画布大小为:${res.w}x${res.h}内容将被裁剪，是否继续？`)) {
     res.h = drawingBoardArr.length;
     res.w = drawingBoardArr[0].length;
     return res;

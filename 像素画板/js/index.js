@@ -190,7 +190,10 @@ export function useDrawingBoard() {
         return
       }
       const { row, col, color } = historyRecord.value[i]
-      drawingBoard.value[row][col] = color
+
+      if (drawingBoard.value[row] && drawingBoard.value[row][col] !== undefined) {
+        drawingBoard.value[row][col] = color
+      }
       i++
     }, 50)
   }
