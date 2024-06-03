@@ -21,6 +21,7 @@ export function useDrawingBoard() {
 
   //调整画布
   const changeDrawingBoard = () => {
+    if (isPlay) return
     const { h, w, arr } = updateDrawingBoard(drawingBoard.value, height, width);
     height.value = h
     width.value = w
@@ -38,6 +39,15 @@ export function useDrawingBoard() {
       height.max = Math.floor(window.innerHeight / 16) - 5
     }
   }
+
+  //获取本地存储的数据
+  const works = ref([])
+  const keys = Object.keys(localStorage)
+  if (keys.length === 0) return
+  keys.forEach(key => {
+    works.value.push(JSON.parse(localStorage.getItem(key)))
+  })
+
   onMounted(() => {
     getVisibleWH()
     //通过防抖计算当前屏幕可视区域的宽度和高度
@@ -45,6 +55,25 @@ export function useDrawingBoard() {
       getVisibleWH()
     }, 100)
     window.addEventListener('resize', resize)
+
+    //文件拖放上传
+    const app = document.getElementById("app")
+    app.addEventListener('dragover', (e) => {
+      e.preventDefault()
+    })
+    app.addEventListener('drop', (e) => {
+      e.preventDefault()
+      const file = e.dataTransfer.files[0]
+      console.log(file);
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const data = JSON.parse(e.target.result)
+        works.value.push(data)
+        localStorage.setItem(data.name, e.target.result)
+        selectWork(data)
+      }
+      reader.readAsText(file)
+    })
   })
 
   //当画笔颜色
@@ -68,37 +97,108 @@ export function useDrawingBoard() {
     }
   }
 
+  //历史纪录
+  const historyRecord = {
+    height: height.value,
+    width: width.value,
+    value: []
+  }
+
   //绘画
   const startDarwing = ref(false)
   const start = (e) => {
     startDarwing.value = true
-    const target = e.target
-    const row = target.getAttribute('data-row')
-    const col = target.getAttribute('data-col')
-    drawingBoard.value[row][col] = currentColor.value;
+    draw(e)
   }
+  let isPlay = false
   const draw = (e) => {
-    if (!startDarwing.value) return
+    if (!startDarwing.value || isPlay) return
     //拿到对应的元素
     const target = e.target
     const row = target.getAttribute('data-row')
     const col = target.getAttribute('data-col')
     drawingBoard.value[row][col] = currentColor.value;
+
+    historyRecord.value.push({ row, col, color: currentColor.value })
   }
   const end = () => {
     startDarwing.value = false
   }
 
+  //重置
   const reset = () => {
+    if (isPlay) return
+    historyRecord.value = []
     drawingBoard.value = init(height.value, width.value)
   }
+
+  //保存到本地
+  const save = (type) => {
+    if (isPlay) return
+    const name = prompt("请输入你的作品名称")
+    const data = JSON.stringify({
+      name: name,
+      height: height.value,
+      width: width.value,
+      drawingBoard: drawingBoard.value,
+      historyRecord: historyRecord.value
+    })
+    if (type === 'file') {
+      const blob = new Blob([data], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = name + '.json'
+      a.click()
+      URL.revokeObjectURL(url)
+    } else {
+      localStorage.setItem(name, data)
+      works.value.push(JSON.parse(data))
+    }
+  }
+
+  const workName = ref();
+  const selectWork = (work) => {
+    const shouldOverwrite = drawingBoard.value.some(row =>
+      row.some(col => col !== "#00000000")
+    );
+    if (shouldOverwrite && !confirm("是否覆盖当前画布？")) {
+      return;
+    }
+    workName.value = work.name
+    height.value = work.height
+    width.value = work.width
+    drawingBoardSize.height = work.height
+    drawingBoardSize.width = work.width
+    drawingBoard.value = JSON.parse(JSON.stringify(work.drawingBoard))
+    historyRecord.value = JSON.parse(JSON.stringify(work.historyRecord))
+  }
+  //播放
+  const play = () => {
+    drawingBoard.value = init(height.value, width.value)
+    isPlay = true
+    let i = 0
+    const palyInterval = setInterval(() => {
+      if (i >= historyRecord.value.length) {
+        isPlay = false
+        clearInterval(palyInterval)
+        return
+      }
+      const { row, col, color } = historyRecord.value[i]
+      drawingBoard.value[row][col] = color
+      i++
+    }, 50)
+  }
+
   return {
+    //画板参数
     height,
     width,
     changeDrawingBoard,
     drawingBoardSize,
     bgDrawingBoard,
     drawingBoard,
+    //笔刷
     brush,
     currentColor,
     customColor,
@@ -107,6 +207,11 @@ export function useDrawingBoard() {
     draw,
     end,
     startDarwing,
-    reset
+    works,
+    reset,
+    save,
+    selectWork,
+    workName,
+    play
   }
 }

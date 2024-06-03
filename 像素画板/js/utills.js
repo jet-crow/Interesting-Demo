@@ -27,7 +27,7 @@ function checkIsCut(drawingBoardArr, height, width) {
   // 检测垂直方向是否有数据丢失
   if (drawingBoardArr.length > height) {
     for (let i = height; i < drawingBoardArr.length; i++) {
-      if (drawingBoardArr[i].some(cell => cell !== "")) {
+      if (drawingBoardArr[i].some(cell => cell !== "#00000000")) {
         return true;
       }
     }
@@ -36,7 +36,7 @@ function checkIsCut(drawingBoardArr, height, width) {
   if (drawingBoardArr[0].length > width) {
     for (let i = 0; i < height; i++) {
       for (let j = width; j < drawingBoardArr[0].length; j++) {
-        if (drawingBoardArr[i][j] !== "") {
+        if (drawingBoardArr[i][j] !== "#00000000") {
           return true;
         }
       }
@@ -71,7 +71,7 @@ export function updateDrawingBoard(drawingBoardArr, height, width) {
       if (drawingBoardArr[i] && drawingBoardArr[i][j] !== undefined) {
         arr[i][j] = drawingBoardArr[i][j];
       } else {
-        arr[i][j] = "";
+        arr[i][j] = "#00000000";
       }
     }
   }

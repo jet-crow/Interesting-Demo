@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>像素画</title>
+  <title>像素画板</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -52,16 +52,16 @@
       <!-- 成品 -->
       <div class="flex border-r pr-2 items-center">
         <div class="mr-1 cursor-pointer relative group">
-          <p class="text-sm hover:text-stone-400 text-nowrap">请选择作品&dtrif;</p>
+          <p class="text-sm hover:text-stone-400 text-nowrap">{{workName==null?"请选择作品":workName}}&dtrif;</p>
           <ul
             class="absolute invisible opacity-0 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-44 overflow-hidden">
-            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Developmen1232131123t</li>
-            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Web Design</li>
-            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Illustration</li>
-            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate">Iconography</li>
+            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:px-4 truncate" v-for="i in works"
+              @click="selectWork(i)">
+              {{i.name}}
+            </li>
           </ul>
         </div>
-        <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50">play</button>
+        <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50" @click="play">play</button>
       </div>
       <!-- 选择背景颜色 -->
       <input type="color" id="bgDrawingBoard" v-model="bgDrawingBoard"
@@ -103,15 +103,15 @@
           save
           <ul
             class="absolute invisible opacity-0 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-36 overflow-hidden text-black text-left">
-            <li class="leading-6 hover:text-stone-400">save</li>
-            <li class="leading-6 hover:text-stone-400">save as (a file)</li>
+            <li class="leading-6 hover:text-stone-400" @click="save">save</li>
+            <li class="leading-6 hover:text-stone-400" @click="save('file')">save as (a file)</li>
           </ul>
         </button>
         <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50 ml-2" @click="reset">reset</button>
       </div>
     </div>
     <!-- 画板 -->
-    <main class=" grid box-content" :style="{
+    <main class="grid box-content" :style="{
       height: height + 'rem', 
       width: width + 'rem',
       backgroundColor: bgDrawingBoard,
