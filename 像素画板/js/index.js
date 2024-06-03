@@ -43,10 +43,11 @@ export function useDrawingBoard() {
   //获取本地存储的数据
   const works = ref([])
   const keys = Object.keys(localStorage)
-  if (keys.length === 0) return
-  keys.forEach(key => {
-    works.value.push(JSON.parse(localStorage.getItem(key)))
-  })
+  if (keys.length !== 0) {
+    keys.forEach(key => {
+      works.value.push(JSON.parse(localStorage.getItem(key)))
+    })
+  }
 
   onMounted(() => {
     getVisibleWH()
@@ -64,7 +65,6 @@ export function useDrawingBoard() {
     app.addEventListener('drop', (e) => {
       e.preventDefault()
       const file = e.dataTransfer.files[0]
-      console.log(file);
       const reader = new FileReader()
       reader.onload = (e) => {
         const data = JSON.parse(e.target.result)
@@ -173,6 +173,11 @@ export function useDrawingBoard() {
     drawingBoard.value = JSON.parse(JSON.stringify(work.drawingBoard))
     historyRecord.value = JSON.parse(JSON.stringify(work.historyRecord))
   }
+  const deleteWork = (work) => {
+    works.value = works.value.filter(w => w.name !== work.name)
+    localStorage.removeItem(work.name)
+  }
+
   //播放
   const play = () => {
     drawingBoard.value = init(height.value, width.value)
@@ -211,6 +216,7 @@ export function useDrawingBoard() {
     reset,
     save,
     selectWork,
+    deleteWork,
     workName,
     play
   }
