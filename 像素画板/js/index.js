@@ -136,6 +136,7 @@ export function useDrawingBoard() {
   const save = (type) => {
     if (isPlay) return
     const name = prompt("请输入你的作品名称")
+    if (name === null) return
     const data = JSON.stringify({
       name: name,
       height: height.value,
