@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>像素画板</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 0;
+    }
+
+    .offset {
+      left: 0.75rem;
+      top: calc(-100% - 3.5px);
+      transform: translateY(25%);
+    }
+
+    /* 滚动条样式 */
+    .scrollbar-container::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+      background-color: #f0f0f0;
+    }
+
+    .scrollbar-container::-webkit-scrollbar-thumb {
+      background-color: #c0c0c0;
+      border-radius: 5px;
+    }
+
+    .scrollbar-container::-webkit-scrollbar-thumb:hover {
+      background-color: #a0a0a0;
+    }
+
+    main>div {
+      border: dotted 1px #c0c0c0;
+    }
+  </style>
+</head>
+
+<body class="scrollbar-container">
+  <div id="app" class="w-screen h-screen flex items-center flex-col">
+    <!-- 操作台 -->
+    <div class="flex items-center my-5 h-10 border-b border-t gap-2 scrollbar-container [&_*]:transition-all">
+      <!-- 成品 -->
+      <div class="flex border-r pr-2 items-center">
+        <div class="mr-1 cursor-pointer relative group">
+          <p class="text-sm hover:text-stone-400 text-nowrap">{{workName==null?"请选择作品":workName}}&dtrif;</p>
+          <ul
+            class="absolute invisible opacity-0 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-44 overflow-hidden">
+            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:pl-4 truncate group/del" v-for="i in works"
+              @click="selectWork(i)">
+              <p class="flex">
+                <span class="flex-1">{{i.name}}</span>
+                <img src="https://api.iconify.design/ph:trash-bold.svg" class="opacity-0  group-hover/del:opacity-100"
+                  @click.stop="deleteWork(i)">
+              </p>
+            </li>
+          </ul>
+        </div>
+        <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50" @click="play">play</button>
+      </div>
+      <!-- 选择背景颜色 -->
+      <input type="color" id="bgDrawingBoard" v-model="bgDrawingBoard"
+        class="w-8 focus:outline-none cursor-pointer rounded overflow-hidden">
+      <label for="width" class="relative">
+        <span class="absolute offset text-gray-400">w</span>
+        <input type="number" v-model="width.value" :max="width.max" class="text-center h-full focus:outline-none w-12">
+      </label>
+      <label for="width" class="relative">
+        <span class="absolute offset text-gray-400">h</span>
+        <input type="number" v-model="height.value" :max="height.max"
+          class="text-center h-full focus:outline-none w-12">
+      </label>
+      <button @click="changeDrawingBoard"
+        class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50">change</button>
+
+      <!-- 笔刷 -->
+      <div class="border-l pl-2 flex justify-center gap-2 items-center">
+        <img src="https://api.iconify.design/ph:eraser.svg" class="p-1 rounded cursor-pointer"
+          :class="currentColor=='#00000000'?'bg-stone-200':''" @click="switchingTool('eraser')">
+        <img src="https://api.iconify.design/ph:paint-brush.svg" class="cursor-pointer rounded p-1"
+          :class="currentColor=='#00000000'?'':'bg-stone-200'" @click="switchingTool('brush')">
+        <div v-for="i in brush" class="w-6 h-6 rounded flex justify-center items-center cursor-pointer"
+          :class="i==currentColor?`bg-[${i}]/50`:''" @click="currentColor=i">
+          <div class="w-4 h-4 rounded" :class="`bg-[${i}]`"></div>
+        </div>
+
+        <!-- 选择背景颜色 -->
+        <div class="w-6 h-6 rounded flex justify-center items-center cursor-pointer"
+          :class="currentColor==customColor?`bg-[${customColor}]/50`:''">
+          <input type="color" id="bgDrawingBoard" v-model="customColor" @input="currentColor=customColor"
+            class="w-4 h-4 rounded overflow-hidden focus:outline-none cursor-pointer">
+        </div>
+      </div>
+
+      <!-- 保存和重置 -->
+      <div class="border-l pl-2 flex items-center">
+        <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50 relative group">
+          save
+          <ul
+            class="absolute invisible opacity-0 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-36 overflow-hidden text-black text-left">
+            <li class="leading-6 hover:text-stone-400" @click="save">save</li>
+            <li class="leading-6 hover:text-stone-400" @click="save('file')">save as (a file)</li>
+          </ul>
+        </button>
+        <button class="text-sm bg-stone-400 px-2 py-1 rounded-md text-stone-50 ml-2" @click="reset">reset</button>
+      </div>
+    </div>
+    <!-- 画板 -->
+    <main class="grid box-content" :style="{
+      height: height + 'rem', 
+      width: width + 'rem',
+      backgroundColor: bgDrawingBoard,
+      gridTemplateColumns: `repeat(${drawingBoardSize.width}, 1fr)`,
+      gridTemplateRows: `repeat(${drawingBoardSize.height}, 1fr)`
+  }" @mousedown.prevent="start" @mouseover.prevent="draw" @mouseup.prevent="end"
+      @mouseleave.prevent="  startDarwing = false">
+
+      <template v-for="(row,rIndex) in drawingBoard" :key="rIndex">
+        <div v-for="(col,cIndex) in row" class="w-4 h-4" :style="{backgroundColor:col,
+        borderColor:col==='#00000000'?'#c0c0c0':col}" :data-row="rIndex" :data-col="cIndex">
+        </div>
+      </template>
+
+    </main>
+  </div>
+</body>
+<script>
+  function debounce(fn, delay) {
+    let timer = null
+    return function () {
+      if (timer) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(() => {
+        fn.apply(this, arguments)
+      }, delay)
+    }
+  }
+
+  //生成画板
+  function init(height = 16, width = 16) {
+    const arr = []
+    for (let i = 0; i < height; i++) {
+      arr.push([])
+      for (let j = 0; j < width; j++) {
+        arr[i].push("#00000000")
+      }
+    }
+    return arr
+  }
+
+  //检测是否有被裁剪
+  function checkIsCut(drawingBoardArr, height, width) {
+    if (drawingBoardArr.length > height) {
+      for (let i = height; i < drawingBoardArr.length; i++) {
+        if (drawingBoardArr[i].some(cell => cell !== "#00000000")) {
+          return true;
+        }
+      }
+    }
+    if (drawingBoardArr[0].length > width) {
+      for (let i = 0; i < height; i++) {
+        for (let j = width; j < drawingBoardArr[0].length; j++) {
+          if (drawingBoardArr[i][j] !== "#00000000") {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+
+  //更新画板
+  function updateDrawingBoard(drawingBoardArr, height, width) {
+    const res = {
+      h: height.value,
+      w: width.value,
+      arr: [],
+    }
+    //最大值校验
+    if (res.h > height.max) res.h = height.max;
+    if (res.w > width.max) res.w = width.max;
+
+    let isDataLoss = checkIsCut(drawingBoardArr, res.h, res.w);
+    if (isDataLoss && !confirm(`画布大小为:${res.w}x${res.h}内容将被裁剪，是否继续？`)) {
+      res.h = drawingBoardArr.length;
+      res.w = drawingBoardArr[0].length;
+      return res;
+    }
+
+    const arr = init(res.h, res.w);
+    // 拷贝画板内容
+    for (let i = 0; i < res.h; i++) {
+      for (let j = 0; j < res.w; j++) {
+        if (drawingBoardArr[i] && drawingBoardArr[i][j] !== undefined) {
+          arr[i][j] = drawingBoardArr[i][j];
+        } else {
+          arr[i][j] = "#00000000";
+        }
+      }
+    }
+    res.arr = arr;
+    return res;
+  };
+
+
+  const { createApp, ref, reactive, onMounted } = Vue
+  createApp({
+    setup() {
+      const height = reactive({
+        value: 16,
+        max: 0
+      })
+      const width = reactive({
+        value: 16,
+        max: 0
+      })
+
+      //画板参数
+      const drawingBoardSize = reactive({
+        width: 16,
+        height: 16
+      })
+      const bgDrawingBoard = ref("#e6e6e6")
+      const drawingBoard = ref(init(height.value, width.value));
+
+      //调整画布
+      const changeDrawingBoard = () => {
+        if (isPlay) return
+        const { h, w, arr } = updateDrawingBoard(drawingBoard.value, height, width);
+        height.value = h
+        width.value = w
+        drawingBoardSize.height = h
+        drawingBoardSize.width = w
+        if (arr.length > 0) drawingBoard.value = arr
+      }
+
+      //获取可视区域的宽度和高度
+      const getVisibleWH = () => {
+        width.max = Math.floor(window.innerWidth / 16) - 1
+        if (Math.floor(window.innerHeight / 16) - 5 < 0) {
+          height.max = 0
+        } else {
+          height.max = Math.floor(window.innerHeight / 16) - 5
+        }
+      }
+
+      //获取本地存储的数据
+      const works = ref([])
+      const keys = Object.keys(localStorage)
+      if (keys.length !== 0) {
+        keys.forEach(key => {
+          works.value.push(JSON.parse(localStorage.getItem(key)))
+        })
+      }
+
+      onMounted(() => {
+        getVisibleWH()
+        //通过防抖计算当前屏幕可视区域的宽度和高度
+        const resize = debounce(() => {
+          getVisibleWH()
+        }, 100)
+        window.addEventListener('resize', resize)
+
+        //文件拖放上传
+        const app = document.getElementById("app")
+        app.addEventListener('dragover', (e) => {
+          e.preventDefault()
+        })
+        app.addEventListener('drop', (e) => {
+          e.preventDefault()
+          const file = e.dataTransfer.files[0]
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            const data = JSON.parse(e.target.result)
+            works.value.push(data)
+            localStorage.setItem(data.name, e.target.result)
+            selectWork(data)
+          }
+          reader.readAsText(file)
+        })
+      })
+
+      //当画笔颜色
+      const currentColor = ref("#191919")
+      const customColor = ref("#e6e6e6")
+      const brush = ref(['#191919', '#301504', '#542409', '#eaee57', '#dba213', '#ffffff'])
+
+      let lastColor = "191919";
+      const switchingTool = (tool) => {
+        switch (tool) {
+          case 'eraser':
+            lastColor = currentColor.value
+            currentColor.value = "#00000000"
+            break;
+          case 'brush':
+            if (currentColor.value !== "#00000000") return
+            currentColor.value = lastColor
+            break
+          default:
+            break;
+        }
+      }
+
+      //历史纪录
+      const historyRecord = {
+        height: height.value,
+        width: width.value,
+        value: []
+      }
+
+      //绘画
+      const startDarwing = ref(false)
+      const start = (e) => {
+        startDarwing.value = true
+        draw(e)
+      }
+      let isPlay = false
+      const draw = (e) => {
+        if (!startDarwing.value || isPlay) return
+        const target = e.target
+        const row = target.getAttribute('data-row')
+        const col = target.getAttribute('data-col')
+        drawingBoard.value[row][col] = currentColor.value;
+
+        historyRecord.value.push({ row, col, color: currentColor.value })
+      }
+      const end = () => {
+        startDarwing.value = false
+      }
+
+      //重置
+      const reset = () => {
+        if (isPlay) return
+        historyRecord.value = []
+        drawingBoard.value = init(height.value, width.value)
+      }
+
+      //保存到本地
+      const save = (type) => {
+        if (isPlay) return
+        const name = prompt("请输入你的作品名称")
+        if (name === null) return
+        const data = JSON.stringify({
+          name: name,
+          height: height.value,
+          width: width.value,
+          drawingBoard: drawingBoard.value,
+          historyRecord: historyRecord.value
+        })
+        if (type === 'file') {
+          const blob = new Blob([data], { type: 'application/json' })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = name + '.json'
+          a.click()
+          URL.revokeObjectURL(url)
+        } else {
+          localStorage.setItem(name, data)
+          works.value.push(JSON.parse(data))
+        }
+      }
+
+      const workName = ref();
+      const selectWork = (work) => {
+        const shouldOverwrite = drawingBoard.value.some(row =>
+          row.some(col => col !== "#00000000")
+        );
+        if (shouldOverwrite && !confirm("是否覆盖当前画布？")) {
+          return;
+        }
+        workName.value = work.name
+        height.value = work.height
+        width.value = work.width
+        drawingBoardSize.height = work.height
+        drawingBoardSize.width = work.width
+        drawingBoard.value = JSON.parse(JSON.stringify(work.drawingBoard))
+        historyRecord.value = JSON.parse(JSON.stringify(work.historyRecord))
+      }
+      const deleteWork = (work) => {
+        works.value = works.value.filter(w => w.name !== work.name)
+        localStorage.removeItem(work.name)
+      }
+
+      //播放
+      const play = () => {
+        drawingBoard.value = init(height.value, width.value)
+        isPlay = true
+        let i = 0
+        const palyInterval = setInterval(() => {
+          if (i >= historyRecord.value.length) {
+            isPlay = false
+            clearInterval(palyInterval)
+            return
+          }
+          const { row, col, color } = historyRecord.value[i]
+
+          if (drawingBoard.value[row] && drawingBoard.value[row][col] !== undefined) {
+            drawingBoard.value[row][col] = color
+          }
+          i++
+        }, 50)
+      }
+
+      return {
+        //画板参数
+        height,
+        width,
+        changeDrawingBoard,
+        drawingBoardSize,
+        bgDrawingBoard,
+        drawingBoard,
+        //笔刷
+        brush,
+        currentColor,
+        customColor,
+        switchingTool,
+        start,
+        draw,
+        end,
+        startDarwing,
+        works,
+        reset,
+        save,
+        selectWork,
+        deleteWork,
+        workName,
+        play
+      }
+    }
+  }).mount('#app')
+</script>
+
+</html>
