@@ -19,9 +19,6 @@ export function useDrawingBoard() {
   const bgDrawingBoard = ref("#e6e6e6")
   const drawingBoard = ref(init(height.value, width.value));
 
-  //测试
-  drawingBoard.value[13][0] = "red"
-
   //调整画布
   const changeDrawingBoard = () => {
     const { h, w, arr } = updateDrawingBoard(drawingBoard.value, height, width);
@@ -31,8 +28,6 @@ export function useDrawingBoard() {
     drawingBoardSize.width = w
     if (arr.length > 0) drawingBoard.value = arr
   }
-
-
 
   //获取可视区域的宽度和高度
   const getVisibleWH = () => {
@@ -52,12 +47,66 @@ export function useDrawingBoard() {
     window.addEventListener('resize', resize)
   })
 
+  //当画笔颜色
+  const currentColor = ref("#191919")
+  const customColor = ref("#e6e6e6")
+  const brush = ref(['#191919', '#301504', '#542409', '#eaee57', '#dba213', '#ffffff'])
+
+  let lastColor = "191919";
+  const switchingTool = (tool) => {
+    switch (tool) {
+      case 'eraser':
+        lastColor = currentColor.value
+        currentColor.value = "#00000000"
+        break;
+      case 'brush':
+        if (currentColor.value !== "#00000000") return
+        currentColor.value = lastColor
+        break
+      default:
+        break;
+    }
+  }
+
+  //绘画
+  const startDarwing = ref(false)
+  const start = (e) => {
+    startDarwing.value = true
+    const target = e.target
+    const row = target.getAttribute('data-row')
+    const col = target.getAttribute('data-col')
+    drawingBoard.value[row][col] = currentColor.value;
+  }
+  const draw = (e) => {
+    if (!startDarwing.value) return
+    //拿到对应的元素
+    const target = e.target
+    const row = target.getAttribute('data-row')
+    const col = target.getAttribute('data-col')
+    drawingBoard.value[row][col] = currentColor.value;
+  }
+  const end = () => {
+    startDarwing.value = false
+  }
+
+  const reset = () => {
+    drawingBoard.value = init(height.value, width.value)
+  }
   return {
     height,
     width,
     changeDrawingBoard,
     drawingBoardSize,
     bgDrawingBoard,
-    drawingBoard
+    drawingBoard,
+    brush,
+    currentColor,
+    customColor,
+    switchingTool,
+    start,
+    draw,
+    end,
+    startDarwing,
+    reset
   }
 }

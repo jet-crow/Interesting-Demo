@@ -16,7 +16,7 @@ export function init(height = 16, width = 16) {
   for (let i = 0; i < height; i++) {
     arr.push([])
     for (let j = 0; j < width; j++) {
-      arr[i].push("")
+      arr[i].push("#00000000")
     }
   }
   return arr
