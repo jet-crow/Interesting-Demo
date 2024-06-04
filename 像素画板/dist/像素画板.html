@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>像素画板</title>
-  <script src="./js/vue.global.js"></script>
-  <script src="./js/tailwindcss.js"></script>
+  <script src="tailwindcss.js"></script>
+  <script src="vue.global.js"></script>
   <style>
     input[type="color"]::-webkit-color-swatch-wrapper {
       padding: 0;
@@ -47,19 +47,18 @@
 <body class="scrollbar-container">
   <div id="app" class="w-screen h-screen flex items-center flex-col">
     <!-- 操作台 -->
-    <div class="flex items-center my-5 h-10 border-b border-t gap-2 scrollbar-container [&_*]:transition-all px-2">
+    <div class="flex items-center my-5 h-10 border-b border-t gap-2 scrollbar-container [&_*]:transition-all">
       <!-- 成品 -->
       <div class="flex border-r pr-2 items-center">
         <div class="mr-1 cursor-pointer relative group">
           <p class="text-sm hover:text-stone-400 text-nowrap">{{workName==null?"请选择作品":workName}}&dtrif;</p>
           <ul
-            class="absolute invisible opacity-100 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-44 overflow-hidden">
-            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:pl-4 group/del" v-for="i in works"
+            class="absolute invisible opacity-0 group-hover:opacity-100 group-hover:visible left-0 top-7 shadow-md bg-white py-3 px-5 rounded-md text-sm w-44 overflow-hidden">
+            <li class="leading-6 hover:text-stone-400 hover:border-l-2 hover:pl-4 truncate group/del" v-for="i in works"
               @click="selectWork(i)">
-              <p class="relative truncate text-nowrap pr-4">
-                <span>{{i.name}}</span>
-                <img src="https://api.iconify.design/ph:trash-bold.svg"
-                  class="opacity-0 absolute right-0 group-hover/del:opacity-100 z-10 top-1/2 transform -translate-y-1/2 cursor-pointer"
+              <p class="flex">
+                <span class="flex-1">{{i.name}}</span>
+                <img src="https://api.iconify.design/ph:trash-bold.svg" class="opacity-0  group-hover/del:opacity-100"
                   @click.stop="deleteWork(i)">
               </p>
             </li>
@@ -133,14 +132,6 @@
     </main>
   </div>
 </body>
-<script type="module">
-  const { createApp } = Vue
-  import { useDrawingBoard } from './js/index.js'
-  createApp({
-    setup() {
-      return useDrawingBoard()
-    }
-  }).mount('#app')
-</script>
+<script src="./index.js"></script>
 
 </html>
