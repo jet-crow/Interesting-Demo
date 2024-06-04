@@ -77,3 +77,57 @@ export function updateDrawingBoard(drawingBoardArr, height, width) {
   return res;
 };
 
+//解析图片文件生成画板内容
+export function parseImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const scale = Math.min(200 / img.width, 200 / img.height);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // 将压缩过的图片转换为二维数组，内容是对应的颜色值
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        const arr = [];
+        const historyRecord = [];
+
+        for (let i = 0; i < canvas.height; i++) {
+          arr[i] = [];
+          for (let j = 0; j < canvas.width; j++) {
+            const index = (i * canvas.width + j) * 4;
+            arr[i][j] = `rgb(${data[index]},${data[index + 1]},${data[index + 2]})`;
+            historyRecord.push({
+              row: i,
+              col: j,
+              color: arr[i][j]
+            });
+          }
+        }
+
+        // 读取文件名字
+        const name = file.name.split('.')[0];
+        resolve({
+          name,
+          height: canvas.height,
+          width: canvas.width,
+          drawingBoard: arr,
+          historyRecord
+        });
+      };
+
+      img.onerror = (error) => reject(error);
+    };
+
+    reader.onerror = (error) => reject(error);
+  });
+}

@@ -1,5 +1,5 @@
 const { ref, reactive, onMounted } = Vue
-import { debounce, init, updateDrawingBoard } from './utills.js'
+import { debounce, init, updateDrawingBoard, parseImageFile } from './utills.js'
 
 export function useDrawingBoard() {
   const height = reactive({
@@ -64,15 +64,39 @@ export function useDrawingBoard() {
     })
     app.addEventListener('drop', (e) => {
       e.preventDefault()
-      const file = e.dataTransfer.files[0]
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const data = JSON.parse(e.target.result)
-        works.value.push(data)
-        localStorage.setItem(data.name, e.target.result)
-        selectWork(data)
+      const file = e.dataTransfer.files[0];
+      if (!file) {
+        alert('请上传文件');
+        return;
       }
-      reader.readAsText(file)
+
+      const { type, name } = file;
+      if (type.startsWith('image')) {
+        parseImageFile(file)
+          .then((result) => {
+            console.log(result);
+            works.value.push(result);
+            localStorage.setItem(result.name, JSON.stringify(result));
+            selectWork(result);
+          })
+          .catch((error) => {
+            console.error('图片解析失败:', error);
+          });
+      } else if (type === 'application/json') {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            works.value.push(data);
+            localStorage.setItem(data.name, event.target.result);
+            selectWork(data);
+          } catch (error) {
+            alert('无效的JSON文件');
+            console.error('JSON解析失败:', error);
+          }
+        };
+        reader.readAsText(file);
+      } else alert('请上传json文件或图片文件');
     })
   })
 
@@ -80,6 +104,7 @@ export function useDrawingBoard() {
   const currentColor = ref("#191919")
   const customColor = ref("#e6e6e6")
   const brush = ref(['#191919', '#301504', '#542409', '#eaee57', '#dba213', '#ffffff'])
+  // const brush = ref(['#0a0b0d', '#f2d300', '#eaab00', '#e6d302', '#f90316', '#ffffff'])//皮卡丘
 
   let lastColor = "191919";
   const switchingTool = (tool) => {
@@ -183,19 +208,25 @@ export function useDrawingBoard() {
     drawingBoard.value = init(height.value, width.value)
     isPlay = true
     let i = 0
-    const palyInterval = setInterval(() => {
+    let batchSize = 1// 每次处理的记录数
+    if (drawingBoard.value.length >= 100) batchSize = drawingBoard.value.length
+    const playInterval = setInterval(() => {
       if (i >= historyRecord.value.length) {
         isPlay = false
-        clearInterval(palyInterval)
+        clearInterval(playInterval)
         return
       }
-      const { row, col, color } = historyRecord.value[i]
 
-      if (drawingBoard.value[row] && drawingBoard.value[row][col] !== undefined) {
-        drawingBoard.value[row][col] = color
+      for (let j = 0; j < batchSize && i < historyRecord.value.length; j++) {
+        const { row, col, color } = historyRecord.value[i]
+
+        if (drawingBoard.value[row] && drawingBoard.value[row][col] !== undefined) {
+          drawingBoard.value[row][col] = color
+        }
+        i++
       }
-      i++
-    }, 50)
+    }, 1)
+
   }
 
   return {
