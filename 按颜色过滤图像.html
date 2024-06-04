@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>按颜色过滤图像</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.4.0/color-thief.umd.js"></script>
+  <style>
+    *,
+    ::before,
+    ::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    /* reset button */
+    button {
+      appearance: none;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      padding: 0;
+      margin: 0;
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      text-decoration: none;
+      text-transform: none;
+      line-height: normal;
+      overflow: visible;
+    }
+
+    input:disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    body {
+      min-height: 100svh;
+      padding: 2rem;
+      background-color: #121212;
+      color: white;
+      font-family: system-ui;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 800px;
+      margin-inline: auto;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 300;
+      text-align: center;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-block: 2rem;
+    }
+
+    .filters>div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid #ffffff30;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      transition: background-color 300ms ease-in-out;
+    }
+
+    .filters>div:focus-within {
+      background: #ffffff30;
+    }
+
+    .filters input[type="color"] {
+      border: 1px solid #ffffff30;
+      border-radius: 50%;
+      width: 1.75rem;
+      height: 1.75rem;
+      outline: none;
+      transition: scale 300ms ease-in-out;
+    }
+
+    .filters input[type="color"]:hover,
+    .filters input[type="color"]:focus {
+      scale: 1.15;
+    }
+
+    .filters button {
+      transition: scale 300ms ease-in-out;
+      border: none;
+      outline: none;
+      font-size: 0.7rem;
+    }
+
+    .filters button#btn-restore {
+      width: 2rem;
+      height: 2rem;
+      display: grid;
+      place-content: center;
+    }
+
+    .filters button:focus-visible,
+    .filters button:hover {
+      scale: 1.25;
+    }
+
+    .image-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+      margin-inline: auto;
+      gap: 0.25rem;
+    }
+
+    .image-gallery>div {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 1;
+      filter: grayscale(0) blur(0px);
+      transition: scale 300ms ease-in-out;
+    }
+
+    .image-gallery img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: scale 300ms ease-in-out;
+      border-radius: 5px;
+    }
+
+    .image-gallery>div.no-match {
+      animation: hideit 300ms linear forwards;
+      pointer-events: none;
+    }
+
+    .image-gallery>div:not(.no-match):hover {
+      scale: 1.15;
+      z-index: 1;
+    }
+
+    .hashtag {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 300;
+      text-align: right;
+      width: 100%;
+    }
+
+    @keyframes hideit {
+      25% {
+        filter: grayscale(0) blur(1px);
+      }
+
+      50% {
+        filter: grayscale(0) blur(2px);
+        opacity: 1;
+      }
+
+      75% {
+        filter: grayscale(0.5) blur(3px);
+      }
+
+      100% {
+        filter: grayscale(1) blur(4px);
+        opacity: 0.3;
+        scale: 0.85;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <div id="filters" class="filters">
+      <div>
+        <input type="color" id="color-picker-1" name="color-picker-1" value="#121212" title="pick your own color"
+          disabled>
+        <button type="button" data-reset title="Reset color"> &#10005;</button>
+      </div>
+
+      <div>
+        <input type="color" id="color-picker-2" name="color-picker-2" value="#121212" title="pick your own color"
+          disabled>
+        <button type="button" data-reset title="Reset color"> &#10005;</button>
+      </div>
+
+      <div>
+        <input type="color" id="color-picker-3" name="color-picker-3" value="#121212" title="pick your own color"
+          disabled>
+        <button type="button" data-reset title="Reset color"> &#10005;</button>
+      </div>
+
+      <div>
+        <button type="button" id="btn-restore" title="reset all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-restore">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3.06 13a9 9 0 1 0 .49 -4.087" />
+            <path d="M3 4.001v5h5" />
+            <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <div id="image-gallery" class="image-gallery">
+      <!-- images loaded here -->
+    </div>
+    <p class="hashtag">author:<a href="https://codepen.io/cbolson" style="color: white;">Chris Bolson</a>
+    </p>
+  </div>
+</body>
+
+</html>
+<script>
+  const IMGS = [
+    "https://images.pexels.com/photos/1111369/pexels-photo-1111369.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/1111317/pexels-photo-1111317.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/7997395/pexels-photo-7997395.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/3608294/pexels-photo-3608294.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/165844/noodles-tagliatelle-raw-colorful-165844.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/1329297/pexels-photo-1329297.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/2479238/pexels-photo-2479238.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/957040/night-photograph-starry-sky-night-sky-star-957040.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/1173576/pexels-photo-1173576.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/946255/pexels-photo-946255.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/947407/pexels-photo-947407.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/3766257/pexels-photo-3766257.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/209549/pexels-photo-209549.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/1078565/pexels-photo-1078565.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/1310181/pexels-photo-1310181.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/7354507/pexels-photo-7354507.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/6805695/pexels-photo-6805695.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/806427/pexels-photo-806427.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/1145977/pexels-photo-1145977.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/2673876/pexels-photo-2673876.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/633437/pexels-photo-633437.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/1961778/pexels-photo-1961778.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/2269667/pexels-photo-2269667.jpeg?auto=compress&cs=tinysrgb&w=680&h=375&dpr=1",
+    "https://images.pexels.com/photos/1432039/pexels-photo-1432039.jpeg?auto=compress&cs=tinysrgb&w=680x375&dpr=1"
+  ];
+
+  const FILTER_COLORS = [
+    { code: "255,0,0", name: "Red" },
+    { code: "0,128,0", name: "Green" },
+    { code: "69, 130, 199", name: "Blue" },
+    { code: "255,0,255", name: "Magenta" },
+    { code: "255,165,0", name: "Orange" },
+    { code: "0,0,0", name: "Black" },
+    { code: "255,255,255", name: "White" }
+  ];
+  //{ code: "255,255,0", name: "Yellow" },
+
+  const TOLERANCE = 50; // this is to give us some range otgherwise it would be almost impossible to find an exact match
+  const FORBIDDEN_HEX = "#121212"; // a hack to prevent the default browser defined hex value on the color picker.
+  const TOTAL_IMAGES = 20;
+  const imageGallery = document.getElementById("image-gallery");
+  const colorPickers = document.querySelectorAll("input[type=color]");
+
+  // store image colors returned by Color Thief
+  const imageColors = {};
+
+  // detect color picker change
+  colorPickers.forEach((cp) => {
+    cp.addEventListener("input", () => {
+      //console.log("click")
+      filterImages();
+    });
+  });
+
+  // reset SPECIFIC color picker to its default value
+  document.querySelectorAll("button[data-reset]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const colorPicker = btn.previousElementSibling;
+      colorPicker.value = FORBIDDEN_HEX;
+      filterImages();
+    });
+  });
+
+  // reset ALL color pìckers
+  document.getElementById("btn-restore").addEventListener("click", () => {
+    colorPickers.forEach((cp) => (cp.value = FORBIDDEN_HEX));
+    filterImages();
+  });
+
+  // check if color is within a tolerance range
+  function isColorWithinTolerance(color1, color2, tolerance) {
+    return (
+      Math.abs(color1[0] - color2[0]) <= tolerance &&
+      Math.abs(color1[1] - color2[1]) <= tolerance &&
+      Math.abs(color1[2] - color2[2]) <= tolerance
+    );
+  }
+  // convert hex to rgb as the HTML color picker can't return rgb
+  function hexToRgb(hex) {
+    // Remove the hash at the start if it's there
+    hex = hex.replace(/^#/, "");
+
+    // Parse r, g, b values
+    let bigint = parseInt(hex, 16);
+    let r = (bigint >> 16) & 255;
+    let g = (bigint >> 8) & 255;
+    let b = bigint & 255;
+    //return `${r}, ${g}, ${b}`
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // filter images based on selected colors
+  function filterImages() {
+    //console.log(imageColors)
+    const selectedColors = [];
+    colorPickers.forEach(function (colorPicker) {
+      const colorValue = colorPicker.value.toLowerCase();
+      if (colorValue !== FORBIDDEN_HEX && colorValue !== "") {
+        // Convert hex color to RGB
+        const userColor = hexToRgb(colorValue);
+        console.log(userColor);
+
+        // Extract RGB values from the userColor string
+        const rgbValues = userColor.match(/\d+/g).map(Number);
+
+        // Add RGB color to selectedColors array
+        selectedColors.push(rgbValues);
+      }
+    });
+
+    const images = document.querySelectorAll(".image-container");
+    images.forEach((image) => {
+      const img = image.querySelector("img");
+      const palette = imageColors[img.src];
+      //console.log(palette)
+      const match = selectedColors.every((selectedColor) => {
+        return palette.some((paletteColor) =>
+          isColorWithinTolerance(selectedColor, paletteColor, TOLERANCE)
+        );
+      });
+      if (match) {
+        image.classList.remove("no-match");
+      } else {
+        image.classList.add("no-match");
+      }
+    });
+  }
+
+  // create an image element
+  function createImageElement(imgUrl, index) {
+    const img = document.createElement("img");
+    img.src = imgUrl;
+    img.alt = `Image ${index + 1}`;
+    img.setAttribute("crossorigin", "anonymous");
+    const container = document.createElement("div");
+    container.classList.add("image-container");
+    container.appendChild(img);
+    imageGallery.appendChild(container);
+    return img;
+  }
+
+  // shuffle array using the Fisher-Yates shuffle algorithm
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+  // handle image load - extract colors and assign to palette.
+  function handleImageLoad(img) {
+    const colorThief = new ColorThief();
+    const palette = colorThief.getPalette(img);
+    imageColors[img.src] = palette;
+  }
+
+  // Shuffle images before loading
+  const shuffledIMGS = shuffle(IMGS);
+
+  // add images to DOM and extract color info
+  let imgCounter = 0;
+  shuffledIMGS.forEach((imgUrl, index) => {
+    //if(imgCounter>= TOTAL_IMAGES) return;
+    const img = createImageElement(imgUrl, index);
+    img.addEventListener("load", () => handleImageLoad(img));
+    imgCounter++;
+
+    if (imgCounter === shuffledIMGS.length) {
+      allImagesProcessed();
+    }
+  });
+  // enable color pickers once all images have been processed
+  function allImagesProcessed() {
+    colorPickers.forEach((cp) => (cp.disabled = false));
+  }
+</script>
