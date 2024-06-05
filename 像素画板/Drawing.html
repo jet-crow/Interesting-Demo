@@ -41,6 +41,10 @@
     main>div {
       border: dotted 1px #c0c0c0;
     }
+
+    .cursor-eraser {
+      cursor: url(https://api.iconify.design/ph:eraser.svg?color=%238f0000) 0 0, auto;
+    }
   </style>
 </head>
 
@@ -115,12 +119,16 @@
       </div>
     </div>
     <!-- 画板 -->
+    <!-- :class="currentColor=='#00000000'?'bg-stone-200':''" -->
     <main class="grid box-content" :style="{
       height: height + 'rem', 
       width: width + 'rem',
       backgroundColor: bgDrawingBoard,
       gridTemplateColumns: `repeat(${drawingBoardSize.width}, 1fr)`,
-      gridTemplateRows: `repeat(${drawingBoardSize.height}, 1fr)`
+      gridTemplateRows: `repeat(${drawingBoardSize.height}, 1fr)`,
+      cursor:currentColor=='#00000000'?
+      'url(https://api.iconify.design/ph:eraser.svg?color=%23000000) -8 10, auto' 
+      :`url(https://api.iconify.design/ph:paint-brush.svg?color=%23${currentColor.slice(1)}) -8 10, auto`
   }" @mousedown.prevent="start" @mouseover.prevent="draw" @mouseup.prevent="end"
       @mouseleave.prevent="  startDarwing = false">
 
@@ -141,6 +149,9 @@
       return useDrawingBoard()
     }
   }).mount('#app')
+  const test= "你好"
+  //切割第一位
+  console.log(test.slice(1))
 </script>
 
 </html>
