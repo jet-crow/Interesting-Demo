@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient on Hover</title>
+    <style>
+        .gradient-hover {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            background-color: white;
+            overflow: hidden;
+        }
+
+        .gradient-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(135deg, #f54ea2, #ff7676);
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+
+        .gradient-hover:hover::before {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-hover"></div>
+</body>
+</html>

@@ -103,7 +103,8 @@ export function useDrawingBoard() {
   //当画笔颜色
   const currentColor = ref("#191919")
   const customColor = ref("#e6e6e6")
-  const brush = ref(['#191919', '#301504', '#542409', '#eaee57', '#dba213', '#ffffff'])
+  // const brush = ref(['#191919', '#301504', '#542409', '#eaee57', '#dba213', '#ffffff'])
+  const brush = ref(['#040203', '#fd564e', '#ef7870', '#fca7a7', '#f37670', '#45a3fb','#f8de27','#fb120b'])
   // const brush = ref(['#0a0b0d', '#f2d300', '#eaab00', '#e6d302', '#f90316', '#ffffff'])//皮卡丘
 
   let lastColor = "191919";

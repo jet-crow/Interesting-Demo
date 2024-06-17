@@ -1,1 +1,4 @@
 test/
+# 只要是.nuxt 都不要不管是几层嵌套
+**/.nuxt/
+**/node_modules/
