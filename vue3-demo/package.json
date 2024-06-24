@@ -21,6 +21,7 @@
     "@nuxtjs/tailwindcss": "^6.12.0",
     "@vant/nuxt": "^1.0.4",
     "naive-ui": "^2.38.2",
+    "nuxt-icon": "^0.6.10",
     "vant": "^4.9.1"
   }
 }

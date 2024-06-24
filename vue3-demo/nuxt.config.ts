@@ -7,7 +7,8 @@ export default defineNuxtConfig({
   modules: [
     '@vant/nuxt',
     '@nuxtjs/tailwindcss',
-    "nuxtjs-naive-ui"
+    "nuxtjs-naive-ui",
+    'nuxt-icon'
   ],
   vite: {
     plugins: [

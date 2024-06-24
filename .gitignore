@@ -3,3 +3,4 @@ test/
 **/node_modules/
 **/package-lock.json
 vue3-demo/package-lock.json
+vue3-demo/.env

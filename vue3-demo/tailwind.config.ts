@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 export default {
+  darkMode: 'selector',
   content: [
     "./components/**/*.{js,vue,ts}",
     "./app.vue",
@@ -18,11 +19,10 @@ export default {
         l: '1.125rem'
       },
       colors: {
-        ssprimary: '#ff3a59',
-        'ssprimary-light': '#fd7f73',
-        'ssprimary-light-50': "#fee6e5",
-        '2e': '#2e2e2e',
-        background: '#f5f5f5'
+        "font-color": '#333639',
+        'dark-background-50': '#18181c',
+        'dark-background': '#101014',
+        'dark-line': '#2d2d30',
       },
     },
   },
